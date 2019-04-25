@@ -1,0 +1,27 @@
+import tensorflow as tf         #tensorflow를 import하고 tf라는 이름으로 호출한다
+import numpy as np              #배열 연산에 사용되는 numpy package를 import하고 np라는 이름으로 호출한다
+tf.enable_eager_execution()     #tensorflow를 대화형 명령 스타일로 프로그래밍 할 수 있도록 해주는 것으로
+                                 기존 그래프 기반 방식에서 벗어나 그래프 생성 없이 연산을 즉시 실행하는 명령형 프로그램밍 환경을 뜻한다.
+
+x_data = [1, 2, 3, 4, 5]        #x_data에 x의 데이터 값을 입력해준다.
+y_data = [1, 2, 3, 4, 5]        #y_data에 y의 데이터 값을 입력해준다
+
+w = tf.Variable(2.9)            #w값을 임의의 값인 2.9로 지정해준다
+b = tf.Variable(0.5)            #b값을 임의의 값인 0.5로 지정해준다
+
+learning_rate = 0.01            #learning+rate값을 0.01로 설정해준다
+
+for i in range(100):            #100번 반복해 실행한다
+    with tf.GradientTape() as tape:     #경사하강법을 이용해 연산되는 값을 tape에 저장한다
+        hypothesis = w * x_data + b     #선형함수의 가설 함수인 H(x) = WX + b에 (W-w, X-x_data, b-b)데이터를 넣어준다
+        cost = tf.reduce_mean(tf.square(hypothesis - y_data))     #가설과 실제값의 오차를 계산하기 위해 (가설 - 실제값)을 해준 뒤 
+                                                                   연산 결과가 음수로 나올 수 있기 때문에 제곱을 해준 후 
+                                                                   평균을 구하는 reduce_mean함수를 이용해 오차의 평균을 구해 cost에 저장한다
+
+    w_grad, b_grad = tape.gradient(cost, [w, b])                  #tape에 저장되어있는 값을 불러와 cost 함수의 변수인 w, b를 미분해서 
+                                                                   gradient 함수를 사용하여 w와 b의 기울기를 구해 각각 w_grad와 b_grad에 저장한다
+                                                                   
+    w.assign_sub(learning_rate * w_grad)                          #w -= learningrate * w_grad로 w값을 업데이트한다
+    b.assign_sub(learning_rate * b_grad)                          #b -= learning_rate * b_grad로 b값을 업데이트한다   
+    if((i % 10) == 0):                                            #10으로 나눴을 때 나머지가 0 즉, 10번에 한번씩
+        print("{:5}|{:10.4f}|{:10.4f}|{:10.6f}".format(i, w.numpy(), b.numpy(), cost))    #   i|    w|   b|   cost 값을 
